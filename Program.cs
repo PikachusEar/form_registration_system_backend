@@ -49,8 +49,8 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API for managing AP Exam registrations at Amberson High School",
         Contact = new Microsoft.OpenApi.Models.OpenApiContact
         {
-            Name = "Amberson High School",
-            Email = "info@ambersonhighschool.com"
+            Name = "Amberson College High School",
+            Email = "j.zeng@ambersoncollege.ca"
         }
     });
 });
