@@ -1,6 +1,6 @@
-# 🗃️ Database Quick Reference Card
+#  Database Quick Reference Card
 
-## 🔄 Standard Update Workflow
+##  Standard Update Workflow
 
 ```bash
 # Step 1: Make changes
@@ -28,7 +28,7 @@ git commit -m "Update: description"
 
 ---
 
-## 📊 Migration Commands
+##  Migration Commands
 
 | Command | Purpose |
 |---------|---------|
@@ -41,7 +41,7 @@ git commit -m "Update: description"
 
 ---
 
-## 🐳 Docker Commands
+##  Docker Commands
 
 | Command | Purpose |
 |---------|---------|
@@ -71,7 +71,7 @@ Host=localhost;Port=5432;Database=ap_registration;Username=apuser;Password=YourS
 
 ---
 
-## 🔍 PostgreSQL Commands (in psql)
+##  PostgreSQL Commands (in psql)
 
 ### Basic Navigation
 | Command | Description |
@@ -107,7 +107,7 @@ GROUP BY "PaymentStatus";
 
 ---
 
-## 🚨 Troubleshooting
+##  Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
@@ -119,7 +119,7 @@ GROUP BY "PaymentStatus";
 
 ---
 
-## 🔧 Common Scenarios
+##  Common Scenarios
 
 ### Undo Last Migration (Not Applied)
 ```bash
@@ -174,7 +174,7 @@ dotnet ef database update
 
 ---
 
-## 📞 Quick Help
+##  Quick Help
 
 **Docker not running?**
 ```bash
@@ -194,17 +194,5 @@ dotnet run --verbosity detailed
 ```
 
 ---
-
-## 🎯 Remember
-
-1. ✅ **Always** review migrations before applying
-2. ✅ **Always** backup production before migrations
-3. ✅ **Always** test in development first
-4. ✅ **Never** edit migration files manually
-5. ✅ **Never** delete `__EFMigrationsHistory` table
-
----
-
-**Last Updated:** 2025-01-06  
 **Project:** AP Exam Registration System  
 **Database:** PostgreSQL 16
