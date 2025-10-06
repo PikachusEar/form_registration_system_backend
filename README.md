@@ -1,3 +1,151 @@
+# Data Flow Diagram
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                          USER / BROWSER                              │
+└────────────────────────────────┬────────────────────────────────────┘
+                                 │
+                                 │ 1. User fills form
+                                 │    and clicks Submit
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      REACT FRONTEND (Vite)                           │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  ContactForm.jsx                                             │   │
+│  │  - Validates form data                                       │   │
+│  │  - Calls submitRegistration(formData)                        │   │
+│  └────────────────────┬─────────────────────────────────────────┘   │
+│                       │                                              │
+│  ┌────────────────────▼─────────────────────────────────────────┐   │
+│  │  api.js (Service Layer)                                      │   │
+│  │  - Creates HTTP POST request                                 │   │
+│  │  - Sends JSON to backend API                                 │   │
+│  │  - URL: https://localhost:7000/api/registrations             │   │
+│  └────────────────────┬─────────────────────────────────────────┘   │
+└────────────────────────┼──────────────────────────────────────────┘
+                         │
+                         │ 2. HTTP POST with JSON payload
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    .NET BACKEND API (Port 7000)                      │
+│                                                                       │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  Program.cs - Application Entry Point                        │   │
+│  │  - Configures services (DI Container)                        │   │
+│  │  - Sets up CORS                                              │   │
+│  │  - Routes request to controller                              │   │
+│  └────────────────────┬─────────────────────────────────────────┘   │
+│                       │                                              │
+│                       │ 3. Routes to RegistrationsController         │
+│                       ▼                                              │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  RegistrationsController.cs                                  │   │
+│  │  POST /api/registrations                                     │   │
+│  │  - Receives CreateRegistrationDto                            │   │
+│  │  - Validates data (ModelState)                               │   │
+│  │  - Maps DTO → Entity                                         │   │
+│  └────────────────────┬─────────────────────────────────────────┘   │
+│                       │                                              │
+│                       │ 4. Calls repository to save                  │
+│                       ▼                                              │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  RegistrationRepository.cs                                   │   │
+│  │  - Creates new Registration entity                           │   │
+│  │  - Generates GUID for ID                                     │   │
+│  │  - Sets CreatedAt timestamp                                  │   │
+│  │  - Creates audit trail entry                                 │   │
+│  └────────────────────┬─────────────────────────────────────────┘   │
+│                       │                                              │
+│                       │ 5. Saves to database                         │
+│                       ▼                                              │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  ApplicationDbContext.cs (Entity Framework)                  │   │
+│  │  - Converts C# objects to SQL                                │   │
+│  │  - Executes INSERT statements                                │   │
+│  │  - Returns saved entity with ID                              │   │
+│  └────────────────────┬─────────────────────────────────────────┘   │
+└────────────────────────┼──────────────────────────────────────────┘
+                         │
+                         │ 6. Saves to PostgreSQL
+                         ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      POSTGRESQL DATABASE                             │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  Registrations Table                                         │   │
+│  │  [Id, FirstName, LastName, Email, Phone, Grade, ...]        │   │
+│  │  + New Row Inserted                                          │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  RegistrationAudits Table                                    │   │
+│  │  [Id, RegistrationId, Action="Created", Timestamp, ...]     │   │
+│  │  + New Audit Entry                                           │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+└────────────────────────┬──────────────────────────────────────────┘
+                         │
+                         │ 7. Returns saved data
+                         ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    .NET BACKEND API (ASYNC)                          │
+│                                                                       │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  RegistrationsController.cs (continued)                      │   │
+│  │  - Receives saved registration from repository               │   │
+│  │  - Triggers ASYNC email tasks (non-blocking)                 │   │
+│  │  - Returns 201 Created response immediately                  │   │
+│  └────────────────────┬─────────────────────────────────────────┘   │
+│                       │                                              │
+│            ┌──────────┴──────────┐                                   │
+│            │                     │                                   │
+│  8. Email  │          9. Email   │                                   │
+│     Task 1 ▼                     ▼ Task 2                            │
+│  ┌─────────────────┐   ┌─────────────────────────┐                  │
+│  │ ResendEmail     │   │ ResendEmail             │                  │
+│  │ Service         │   │ Service                 │                  │
+│  │                 │   │                         │                  │
+│  │ - Student       │   │ - Staff                 │                  │
+│  │   Confirmation  │   │   Notification          │                  │
+│  │ - Builds HTML   │   │ - Builds HTML           │                  │
+│  │ - Calls Resend  │   │ - Calls Resend          │                  │
+│  └────────┬────────┘   └────────┬────────────────┘                  │
+└───────────┼─────────────────────┼───────────────────────────────────┘
+            │                     │
+            │ 10. HTTP POST       │ 11. HTTP POST
+            │ to Resend API       │ to Resend API
+            ▼                     ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         RESEND API SERVICE                           │
+│  - Receives email requests                                           │
+│  - Validates API key                                                 │
+│  - Queues emails for delivery                                        │
+│  - Sends to recipient email addresses                                │
+└────────────────────────┬─────────────────┬───────────────────────────┘
+                         │                 │
+            12. Email    │                 │ 13. Email
+                delivered│                 │ delivered
+                         ▼                 ▼
+              ┌────────────────┐  ┌────────────────┐
+              │ STUDENT EMAIL  │  │  STAFF EMAIL   │
+              │ Confirmation   │  │  Notification  │
+              └────────────────┘  └────────────────┘
+
+                         ┌────────────────────┐
+                         │ 14. Success        │
+                         │ Response sent back │
+                         │ to frontend        │
+                         └─────────┬──────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      REACT FRONTEND                                  │
+│  - Receives 201 Created response                                     │
+│  - Shows success message                                             │
+│  - Displays "Check your email for confirmation"                      │
+│  - Resets form after 2 seconds                                       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+
+
 #  Database Quick Reference Card
 
 ##  Standard Update Workflow
