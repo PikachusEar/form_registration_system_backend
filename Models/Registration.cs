@@ -24,7 +24,7 @@ namespace APRegistrationAPI.Models
         [MaxLength(20)]
         public string? HomePhone { get; set; }
 
-        [Required]
+
         [MaxLength(20)]
         public string MobilePhone { get; set; } = string.Empty;
 
@@ -32,7 +32,6 @@ namespace APRegistrationAPI.Models
         [MaxLength(200)]
         public string CurrentSchool { get; set; } = string.Empty;
 
-        [Required]
         [MaxLength(10)]
         public string Grade { get; set; } = string.Empty;
 

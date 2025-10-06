@@ -29,8 +29,8 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins(
                     "http://localhost:5173",  // Vite default dev server
-                    "http://localhost:3000",  // Alternative port
-                    "https://yourdomain.com"  // Production domain - UPDATE THIS
+                    "http://localhost:3000"  // Alternative port
+                    //"https://yourdomain.com"  // Production domain - UPDATE THIS
                 )
                 .AllowAnyMethod()
                 .AllowAnyHeader()
