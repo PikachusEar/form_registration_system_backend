@@ -70,6 +70,50 @@ namespace APRegistrationAPI.DTOs
         public string? Notes { get; set; }
     }
 
+    public class UpdateRegistrationDto
+    {
+    [Required(ErrorMessage = "First name is required")]
+    [MaxLength(100)]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Last name is required")]
+    [MaxLength(100)]
+    public string LastName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Invalid email format")]
+    [MaxLength(255)]
+    public string Email { get; set; } = string.Empty;
+
+    [MaxLength(20)]
+    public string? HomePhone { get; set; }
+
+    [Required(ErrorMessage = "Mobile phone is required")]
+    [MaxLength(20)]
+    public string MobilePhone { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Current school is required")]
+    [MaxLength(200)]
+    public string CurrentSchool { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Grade is required")]
+    [MaxLength(10)]
+    public string Grade { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Exam section is required")]
+    [MaxLength(100)]
+    public string ExamSection { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Payment status is required")]
+    [MaxLength(20)]
+    [RegularExpression("^(Pending|Paid|Cancelled)$", 
+        ErrorMessage = "Payment status must be Pending, Paid, or Cancelled")]
+    public string PaymentStatus { get; set; } = "Pending";
+
+    [MaxLength(100)]
+    public string? UpdatedBy { get; set; }
+    }
+
     public class ApiResponse<T>
     {
         public bool Success { get; set; }

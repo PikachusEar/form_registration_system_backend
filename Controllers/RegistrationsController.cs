@@ -184,6 +184,113 @@ namespace APRegistrationAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Update an existing registration
+        /// </summary>
+        /// <param name="id">Registration ID</param>
+        /// <param name="dto">Updated registration data</param>
+        /// <returns>Updated registration details</returns>
+        [HttpPut("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<RegistrationResponseDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateRegistration(Guid id, [FromBody] UpdateRegistrationDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+                    
+                    return BadRequest(ApiResponse<object>.ErrorResponse(
+                        "Validation failed", errors));
+                }
+
+                // Check if registration exists
+                var exists = await _repository.ExistsAsync(id);
+                if (!exists)
+                {
+                    return NotFound(ApiResponse<object>.ErrorResponse(
+                        $"Registration with ID {id} not found"));
+                }
+
+                // Get existing registration to preserve audit history
+                var existingRegistration = await _repository.GetByIdAsync(id);
+                if (existingRegistration == null)
+                {
+                    return NotFound(ApiResponse<object>.ErrorResponse(
+                        $"Registration with ID {id} not found"));
+                }
+
+                // Map DTO to entity
+                var registration = new Registration
+                {
+                    Id = id,
+                    FirstName = dto.FirstName,
+                    LastName = dto.LastName,
+                    Email = dto.Email,
+                    HomePhone = dto.HomePhone,
+                    MobilePhone = dto.MobilePhone,
+                    CurrentSchool = dto.CurrentSchool,
+                    Grade = dto.Grade,
+                    ExamSection = dto.ExamSection,
+                    PaymentStatus = dto.PaymentStatus,
+                    UpdatedBy = dto.UpdatedBy ?? "System",
+                    CreatedAt = existingRegistration.CreatedAt
+                };
+
+                // Update in database
+                var updated = await _repository.UpdateAsync(registration);
+
+                if (updated == null)
+                {
+                    return NotFound(ApiResponse<object>.ErrorResponse(
+                        $"Failed to update registration with ID {id}"));
+                }
+
+                // If payment status changed to "Paid", send confirmation email
+                if (existingRegistration.PaymentStatus != dto.PaymentStatus && 
+                    dto.PaymentStatus == "Paid")
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await _emailService.SendConfirmationEmailAsync(
+                                updated.Email,
+                                updated.FirstName,
+                                updated.LastName,
+                                updated.ExamSection,
+                                updated.Grade,
+                                updated.Id.ToString()
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to send payment confirmation email for registration {Id}", updated.Id);
+                        }
+                    });
+                }
+
+                // Map to response DTO
+                var responseDto = MapToResponseDto(updated);
+
+                return Ok(ApiResponse<RegistrationResponseDto>.SuccessResponse(
+                    responseDto,
+                    "Registration updated successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating registration {Id}", id);
+                return StatusCode(500, ApiResponse<object>.ErrorResponse(
+                    "An error occurred while updating the registration"));
+            }
+        }
+
         // Helper mapping methods
         private RegistrationResponseDto MapToResponseDto(Registration registration)
         {
