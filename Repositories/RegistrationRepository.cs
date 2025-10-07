@@ -98,8 +98,17 @@ namespace APRegistrationAPI.Repositories
                     return null;
 
                 var changes = new List<string>();
+                
                 if (existing.PaymentStatus != registration.PaymentStatus)
                     changes.Add($"Payment Status: {existing.PaymentStatus} -> {registration.PaymentStatus}");
+                if (existing.FirstName != registration.FirstName)
+                    changes.Add($"First Name: {existing.FirstName} -> {registration.FirstName}");
+                if (existing.LastName != registration.LastName)
+                    changes.Add($"First Name: {existing.LastName} -> {registration.LastName}");
+                if (existing.Email != registration.Email)
+                    changes.Add($"First Name: {existing.Email} -> {registration.Email}");
+                if (existing.MobilePhone != registration.MobilePhone)
+                    changes.Add($"First Name: {existing.MobilePhone} -> {registration.MobilePhone}");
 
                 existing.FirstName = registration.FirstName;
                 existing.LastName = registration.LastName;

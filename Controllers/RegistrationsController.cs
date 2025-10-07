@@ -337,8 +337,6 @@ namespace APRegistrationAPI.Controllers
                         Action = a.Action,
                         ChangedBy = a.ChangedBy,
                         ChangedAt = a.ChangedAt,
-                        OldValue = a.OldValue,
-                        NewValue = a.NewValue,
                         Notes = a.Notes
                     })
                     .ToList()

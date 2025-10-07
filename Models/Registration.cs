@@ -71,10 +71,6 @@ namespace APRegistrationAPI.Models
         [Required]
         public DateTime ChangedAt { get; set; }
 
-        public string? OldValue { get; set; }
-
-        public string? NewValue { get; set; }
-
         [MaxLength(500)]
         public string? Notes { get; set; }
 

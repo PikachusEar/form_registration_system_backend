@@ -65,8 +65,6 @@ namespace APRegistrationAPI.DTOs
         public string Action { get; set; } = string.Empty;
         public string ChangedBy { get; set; } = string.Empty;
         public DateTime ChangedAt { get; set; }
-        public string? OldValue { get; set; }
-        public string? NewValue { get; set; }
         public string? Notes { get; set; }
     }
 
