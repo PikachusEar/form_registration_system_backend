@@ -43,14 +43,32 @@ namespace APRegistrationAPI.Controllers
                         .SelectMany(v => v.Errors)
                         .Select(e => e.ErrorMessage)
                         .ToList();
-                    
+
                     return BadRequest(ApiResponse<object>.ErrorResponse(
                         "Validation failed", errors));
+                }
+                
+                // Check if registration with this idempotency key already exists
+                var existingRegistration = await _repository.GetByIdempotencyKeyAsync(dto.IdempotencyKey);
+                
+                if (existingRegistration != null)
+                {
+                    _logger.LogInformation(
+                        "Idempotent request detected. Returning existing registration {Id} for key {Key}", 
+                        existingRegistration.Id, 
+                        dto.IdempotencyKey);
+
+                    var existingDto = MapToResponseDto(existingRegistration);
+                    
+                    return Ok(ApiResponse<RegistrationResponseDto>.SuccessResponse(
+                        existingDto,
+                        "Registration already exists (idempotent request). No duplicate created."));
                 }
 
                 // Map DTO to entity
                 var registration = new Registration
                 {
+                    IdempotencyKey = dto.IdempotencyKey,
                     FirstName = dto.FirstName,
                     LastName = dto.LastName,
                     Email = dto.Email,

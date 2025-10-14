@@ -10,6 +10,10 @@ namespace APRegistrationAPI.Models
 
         [Required]
         [MaxLength(100)]
+        public string IdempotencyKey { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(100)]
         public string FirstName { get; set; } = string.Empty;
 
         [Required]

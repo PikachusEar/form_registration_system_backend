@@ -4,6 +4,10 @@ namespace APRegistrationAPI.DTOs
 {
     public class CreateRegistrationDto
     {
+        [Required(ErrorMessage = "Idempotency key is required")]
+        [MaxLength(100)]
+        public string IdempotencyKey { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "First name is required")]
         [MaxLength(100)]
         public string FirstName { get; set; } = string.Empty;

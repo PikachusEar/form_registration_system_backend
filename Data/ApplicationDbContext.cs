@@ -29,6 +29,11 @@ namespace APRegistrationAPI.Data
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                entity.HasIndex(e => e.IdempotencyKey)
+                    .IsUnique()
+                    .HasDatabaseName("IX_Registrations_IdempotencyKey");
+
+
                 entity.HasIndex(e => e.Email);
                 entity.HasIndex(e => e.CreatedAt);
                 entity.HasIndex(e => e.PaymentStatus);

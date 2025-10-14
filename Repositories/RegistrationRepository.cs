@@ -7,6 +7,7 @@ namespace APRegistrationAPI.Repositories
     public interface IRegistrationRepository
     {
         Task<Registration?> GetByIdAsync(Guid id);
+        Task<Registration?> GetByIdempotencyKeyAsync(string idempotencyKey);
         Task<IEnumerable<Registration>> GetAllAsync();
         Task<Registration> CreateAsync(Registration registration);
         Task<Registration?> UpdateAsync(Registration registration);
@@ -25,6 +26,21 @@ namespace APRegistrationAPI.Repositories
             _context = context;
             _logger = logger;
         }
+
+        public async Task<Registration?> GetByIdempotencyKeyAsync(string idempotencyKey)
+    {
+        try
+        {
+            return await _context.Registrations
+                .Include(r => r.AuditHistory)
+                .FirstOrDefaultAsync(r => r.IdempotencyKey == idempotencyKey);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving registration with idempotency key: {Key}", idempotencyKey);
+            throw;
+        }
+    }
 
         public async Task<Registration?> GetByIdAsync(Guid id)
         {
@@ -60,6 +76,16 @@ namespace APRegistrationAPI.Repositories
         {
             try
             {
+                var existing = await GetByIdempotencyKeyAsync(registration.IdempotencyKey);
+                if (existing != null)
+                {
+                    _logger.LogInformation(
+                        "Registration with idempotency key {Key} already exists. Returning existing registration {Id}",
+                        registration.IdempotencyKey,
+                        existing.Id
+                    );
+                    return existing;
+                }
                 registration.Id = Guid.NewGuid();
                 registration.CreatedAt = DateTime.UtcNow;
                 registration.PaymentStatus = "Pending";
@@ -82,6 +108,20 @@ namespace APRegistrationAPI.Repositories
                 _logger.LogInformation("Registration created successfully. ID: {Id}", registration.Id);
                 return registration;
             }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("IX_Registrations_IdempotencyKey") == true)
+            {
+                // Race condition: another request created the same idempotency key
+                _logger.LogWarning(ex, "Duplicate idempotency key detected: {Key}. Fetching existing registration.", 
+                    registration.IdempotencyKey);
+                
+                var existing = await GetByIdempotencyKeyAsync(registration.IdempotencyKey);
+                if (existing != null)
+                {
+                    return existing;
+                }
+                throw;
+            }
+
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating registration");
