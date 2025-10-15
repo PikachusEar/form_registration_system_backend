@@ -42,8 +42,8 @@ namespace APRegistrationAPI.Services
                 var emailRequest = new
                 {
                     from = _configuration["Email:FromAddress"] ?? "notifications@notifications.ambersoncollege.ca",
-                    //to = new[] { toEmail },
-                    to = "zengzhaoming1997@gmail.com",
+                    to = new[] { toEmail },
+                    //to = "zengzhaoming1997@gmail.com",
                     subject = "AP Exam Registration Confirmation - Amberson High School",
                     html = emailHtml
                 };
