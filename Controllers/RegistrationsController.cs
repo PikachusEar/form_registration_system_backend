@@ -60,8 +60,7 @@ namespace APRegistrationAPI.Controllers
 
                     var existingDto = MapToResponseDto(existingRegistration);
                     
-                    return Ok(ApiResponse<RegistrationResponseDto>.SuccessResponse(
-                        existingDto,
+                    return StatusCode(500, ApiResponse<object>.ErrorResponse(
                         "Registration already exists (idempotent request). No duplicate created."));
                 }
 

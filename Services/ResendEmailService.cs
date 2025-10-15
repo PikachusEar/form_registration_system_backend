@@ -41,8 +41,9 @@ namespace APRegistrationAPI.Services
                 
                 var emailRequest = new
                 {
-                    from = _configuration["Email:FromAddress"] ?? "onboarding@resend.dev",
-                    to = new[] { toEmail },
+                    from = _configuration["Email:FromAddress"] ?? "notifications@notifications.ambersoncollege.ca",
+                    //to = new[] { toEmail },
+                    to = "zengzhaoming1997@gmail.com",
                     subject = "AP Exam Registration Confirmation - Amberson High School",
                     html = emailHtml
                 };
@@ -66,12 +67,12 @@ namespace APRegistrationAPI.Services
         {
             try
             {
-                var staffEmail = _configuration["Email:StaffNotificationEmail"] ?? "staff@ambersonhighschool.com";
+                var staffEmail = _configuration["Email:StaffNotificationEmail"] ?? "j.zeng@ambersoncollege.ca";
                 var emailHtml = GetStaffNotificationTemplate(firstName, lastName, email, examSection, grade, registrationId);
                 
                 var emailRequest = new
                 {
-                    from = _configuration["Email:FromAddress"] ?? "onboarding@resend.dev",
+                    from = _configuration["Email:FromAddress"] ?? "notifications@notifications.ambersoncollege.ca",
                     to = new[] { staffEmail },
                     subject = $"New AP Exam Registration - {firstName} {lastName}",
                     html = emailHtml
@@ -88,7 +89,7 @@ namespace APRegistrationAPI.Services
 
         private async Task<bool> SendEmailAsync(object emailRequest)
         {
-            var apiKey = _configuration["Email:ResendApiKey"] ?? "YOUR_RESEND_API_KEY";
+            var apiKey = _configuration["Email:ResendApiKey"] ?? "re_cNxnSVH7_sqJZawgvqmsofms4Ce5FGduG";
             
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
